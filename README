@@ -1,0 +1,279 @@
+# Country Data Management API
+
+A RESTful API for managing country data with exchange rates, GDP estimates, and automated summary image generation.
+
+## Features
+
+- Fetch and store country data from external APIs
+- Currency exchange rate integration
+- Filter countries by region and currency
+- Sort countries by various attributes
+- Auto-generate summary images with country statistics
+- Real-time database updates
+
+## Prerequisites
+
+- Node.js (v14 or higher)
+- MySQL (v5.7 or higher)
+- npm or yarn
+
+## Installation
+
+1. Clone the repository:
+```bash
+git clone <repository-url>
+cd HNG-stage-two-backend
+```
+
+2. Install dependencies:
+```bash
+npm install
+```
+
+3. Install canvas dependencies (for image generation):
+
+**Windows:**
+```bash
+npm install canvas
+```
+
+**Linux:**
+```bash
+sudo apt-get install build-essential libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev
+npm install canvas
+```
+
+**macOS:**
+```bash
+brew install pkg-config cairo pango libpng jpeg giflib librsvg
+npm install canvas
+```
+
+4. Create a `.env` file in the root directory:
+```env
+PORT=3000
+DB_HOST=localhost
+DB_USER=root
+DB_PASSWORD=your_password
+DB_NAME=countries_db
+```
+
+5. Set up the MySQL database:
+```sql
+CREATE DATABASE countries_db;
+
+USE countries_db;
+
+CREATE TABLE countries (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255) UNIQUE NOT NULL,
+    capital VARCHAR(255),
+    region VARCHAR(255),
+    population BIGINT,
+    currency_code VARCHAR(10),
+    exchange_rate DECIMAL(15, 6),
+    estimated_gdp DECIMAL(20, 2),
+    flag_url VARCHAR(500),
+    last_refreshed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+```
+
+## Running the Application
+
+**Development mode:**
+```bash
+npm run dev
+```
+
+**Production mode:**
+```bash
+npm start
+```
+
+The server will start on `http://localhost:3000` (or your configured PORT).
+
+## API Endpoints
+
+### 1. Refresh Countries Data
+**Endpoint:** `POST /api/refresh`
+
+Fetches country data from external APIs, updates the database, and generates a summary image.
+
+**Response:**
+```json
+[
+  {
+    "id": 1,
+    "name": "United States",
+    "capital": "Washington, D.C.",
+    "region": "Americas",
+    "population": 331002651,
+    "currency_code": "USD",
+    "exchange_rate": 1.0,
+    "estimated_gdp": 21433226000000,
+    "flag_url": "https://...",
+    "last_refreshed_at": "2025-10-25T10:30:00.000Z"
+  }
+]
+```
+
+### 2. Get All Countries
+**Endpoint:** `GET /api/countries`
+
+Retrieve all countries with optional filtering and sorting.
+
+**Query Parameters:**
+- `region` (optional): Filter by region (e.g., "Africa", "Europe", "Asia")
+- `currency` (optional): Filter by currency code (e.g., "USD", "EUR")
+- `sort` (optional): Sort by field (e.g., "population", "estimated_gdp")
+
+**Example:**
+```
+GET /api/countries?region=Africa&sort=population
+```
+
+**Response:**
+```json
+[
+  {
+    "id": 1,
+    "name": "Nigeria",
+    "capital": "Abuja",
+    "region": "Africa",
+    ...
+  }
+]
+```
+
+### 3. Get Country by Name
+**Endpoint:** `GET /api/countries/:name`
+
+Retrieve a specific country by name.
+
+**Example:**
+```
+GET /api/countries/Nigeria
+```
+
+**Response:**
+```json
+{
+  "id": 1,
+  "name": "Nigeria",
+  "capital": "Abuja",
+  "region": "Africa",
+  ...
+}
+```
+
+### 4. Delete Country
+**Endpoint:** `DELETE /api/countries/:name`
+
+Delete a country from the database.
+
+**Response:**
+```json
+{
+  "message": "Country deleted successfully"
+}
+```
+
+### 5. Get Status
+**Endpoint:** `GET /api/status`
+
+Get database statistics.
+
+**Response:**
+```json
+{
+  "total_countries": 195,
+  "last_refreshed_at": "2025-10-25T10:30:00.000Z"
+}
+```
+
+### 6. Get Summary Image
+**Endpoint:** `GET /api/countries/image`
+
+Retrieve the auto-generated summary image containing:
+- Total number of countries
+- Top 5 countries by GDP
+- Last refreshed timestamp
+
+**Response:** PNG image file
+
+**Error Response:**
+```json
+{
+  "error": "summary image not found"
+}
+```
+
+## Project Structure
+
+```
+HNG-stage-two-backend/
+├── controllers/
+│   └── currencyController.js    # Request handlers
+├── routes/
+│   └── currencyRoutes.js        # API routes
+├── images/
+│   └── summary.png              # Generated summary image
+├── service.js                   # External API integration
+├── db.js                        # Database connection
+├── server.js                    # Entry point
+├── .env                         # Environment variables
+└── package.json
+```
+
+## Environment Variables
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| PORT | Server port | 3000 |
+| DB_HOST | MySQL host | localhost |
+| DB_USER | Database user | root |
+| DB_PASSWORD | Database password | - |
+| DB_NAME | Database name | countries_db |
+
+## Error Handling
+
+The API returns appropriate HTTP status codes:
+
+- `200` - Success
+- `404` - Resource not found
+- `500` - Internal server error
+
+Error responses follow this format:
+```json
+{
+  "error": "Error message description"
+}
+```
+
+## Dependencies
+
+- **express** - Web framework
+- **mysql2** - MySQL client
+- **dotenv** - Environment variable management
+- **canvas** - Image generation
+- **axios** - HTTP client (if used in service.js)
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Commit your changes
+4. Push to the branch
+5. Create a Pull Request
+
+## License
+
+ISC
+
+## Author
+
+Samuel - HNG Internship Stage Two Project
+
+## Support
+
+For issues or questions, please open an issue on the GitHub repository.
